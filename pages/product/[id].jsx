@@ -1,36 +1,38 @@
-import Head from 'next/head'
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import Head from "next/head";
+import Link from "next/link";
 
-export default function ProductPage(props) {
-  const { product } = props;
+// Step 2: This component is rendered from the server (Server-Side Rendering) SSR
+export default function Blog({ stock }) {
+  console.log("stock 2", stock);
+  if (!stock)
+    return (
+      <div>
+        <p>Product not found</p>
+        <Link href="/product">Back</Link>
+      </div>
+    );
 
-  if (!product) return (<div>Loading...</div>)
   return (
     <>
       <Head>
-        <title>Products</title>
+        <title>{stock.code}</title>
       </Head>
-      <h1>{product.title}</h1>
-      <div>
-        <p>${product.description}</p>
-        <p>${product.price}</p>
-      </div>
-      <Link href="/product">Back to Product List</Link>
+      <h1>
+        {stock.code} {stock.name}
+      </h1>
+      <p>{stock.price}</p>
+      <Link href="/product">Back</Link>
     </>
-  )
+  );
 }
 
-export async function getServerSideProps(context) {
-  console.log(`Fetching Product ID: ${context.params['id']}`)
-  console.debug(`Fetching ${process.env.APIURL}product/${context.params['id']}`)
-  const ret = await fetch(`${process.env.APIURL}product/${context.params['id']}`)
-  const product = await ret.json()
-  console.log(product)
-  return {
-    props: {
-      product
-    }
-  }
-
+// STEP 1: This function will be executed at the server before loading the page.
+export async function getServerSideProps({ params }) {
+  console.debug("params", params);
+  const res = await fetch(
+    `https://stock-next-chi.vercel.app/api/stock/products/${params.id}`
+  );
+  const stock = await res.json();
+  console.debug("stock 1", stock);
+  return { props: { stock } };
 }
